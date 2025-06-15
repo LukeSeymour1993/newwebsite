@@ -2,29 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Badminton Match Tracker</title>
+  <title>Badminton Final Score Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       background: #f0f0f0;
+      padding: 20px;
     }
     .container {
       max-width: 600px;
       margin: auto;
-      background: white;
+      background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     input {
       width: 48%;
-      padding: 10px;
       margin: 5px 1%;
+      padding: 10px;
     }
     button {
-      padding: 10px;
       width: 100%;
+      padding: 10px;
       margin-top: 10px;
     }
     table {
@@ -33,30 +33,24 @@
       margin-top: 20px;
     }
     th, td {
+      border: 1px solid #ddd;
       padding: 10px;
-      border: 1px solid #ccc;
       text-align: center;
     }
     th {
-      background: #eee;
+      background-color: #f7f7f7;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Badminton Match Tracker</h2>
-    
-    <div>
-      <input type="text" id="player1" placeholder="Player 1 Name">
-      <input type="number" id="score1" placeholder="Player 1 Score">
-    </div>
-    <div>
-      <input type="text" id="player2" placeholder="Player 2 Name">
-      <input type="number" id="score2" placeholder="Player 2 Score">
-    </div>
-    
-    <button onclick="submitMatch()">Submit Match</button>
-    
+    <h2>Badminton Match Results</h2>
+    <input type="text" id="player1" placeholder="Player 1 Name">
+    <input type="number" id="score1" placeholder="Player 1 Final Score">
+    <input type="text" id="player2" placeholder="Player 2 Name">
+    <input type="number" id="score2" placeholder="Player 2 Final Score">
+    <button onclick="submitMatch()">Submit Final Score</button>
+
     <h3>Player Rankings</h3>
     <table>
       <thead>
@@ -64,8 +58,8 @@
           <th>Player</th>
           <th>Matches Played</th>
           <th>Matches Won</th>
-          <th>Games Won</th>
-          <th>Games Lost</th>
+          <th>Total Points Scored</th>
+          <th>Total Points Conceded</th>
         </tr>
       </thead>
       <tbody id="rankingTable"></tbody>
@@ -77,12 +71,12 @@
 
     function submitMatch() {
       const p1 = document.getElementById("player1").value.trim();
-      const p2 = document.getElementById("player2").value.trim();
       const s1 = parseInt(document.getElementById("score1").value);
+      const p2 = document.getElementById("player2").value.trim();
       const s2 = parseInt(document.getElementById("score2").value);
 
       if (!p1 || !p2 || isNaN(s1) || isNaN(s2)) {
-        alert("Please fill in all fields.");
+        alert("Please fill in both names and scores.");
         return;
       }
 
@@ -91,52 +85,55 @@
         return;
       }
 
-      updatePlayer(p1, s1, s2);
-      updatePlayer(p2, s2, s1);
-
-      if (s1 > s2) {
-        players[p1].matchesWon += 1;
-      } else {
-        players[p2].matchesWon += 1;
-      }
+      // Update player records
+      updatePlayer(p1, s1, s2, s1 > s2);
+      updatePlayer(p2, s2, s1, s2 > s1);
 
       updateTable();
+
+      // Clear inputs
+      document.getElementById("player1").value = "";
+      document.getElementById("score1").value = "";
+      document.getElementById("player2").value = "";
+      document.getElementById("score2").value = "";
     }
 
-    function updatePlayer(name, scored, conceded) {
+    function updatePlayer(name, scored, conceded, isWinner) {
       if (!players[name]) {
         players[name] = {
           matchesPlayed: 0,
           matchesWon: 0,
-          gamesWon: 0,
-          gamesLost: 0
+          pointsScored: 0,
+          pointsConceded: 0
         };
       }
 
       players[name].matchesPlayed += 1;
-      players[name].gamesWon += scored;
-      players[name].gamesLost += conceded;
+      players[name].pointsScored += scored;
+      players[name].pointsConceded += conceded;
+      if (isWinner) {
+        players[name].matchesWon += 1;
+      }
     }
 
     function updateTable() {
-      const table = document.getElementById("rankingTable");
-      const sortedPlayers = Object.entries(players).sort((a, b) => {
+      const tableBody = document.getElementById("rankingTable");
+
+      const sorted = Object.entries(players).sort((a, b) => {
         return b[1].matchesWon - a[1].matchesWon;
       });
 
-      table.innerHTML = "";
-      for (const [name, stats] of sortedPlayers) {
-        table.innerHTML += `
-          <tr>
-            <td>${name}</td>
-            <td>${stats.matchesPlayed}</td>
-            <td>${stats.matchesWon}</td>
-            <td>${stats.gamesWon}</td>
-            <td>${stats.gamesLost}</td>
-          </tr>
-        `;
-      }
+      tableBody.innerHTML = sorted.map(([name, stats]) => `
+        <tr>
+          <td>${name}</td>
+          <td>${stats.matchesPlayed}</td>
+          <td>${stats.matchesWon}</td>
+          <td>${stats.pointsScored}</td>
+          <td>${stats.pointsConceded}</td>
+        </tr>
+      `).join("");
     }
   </script>
 </body>
 </html>
+
