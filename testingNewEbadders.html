@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Badminton Score Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    .scoreboard {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+    .log {
+      background: #e9e9e9;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Badminton Score Tracker</h2>
+
+    <label>Player A Name:</label>
+    <input type="text" id="playerAName" placeholder="Enter Player A Name">
+
+    <label>Player B Name:</label>
+    <input type="text" id="playerBName" placeholder="Enter Player B Name">
+
+    <button onclick="startMatch()">Start Match</button>
+
+    <div id="matchArea" style="display:none;">
+      <div class="scoreboard">
+        <strong id="playerALabel">Player A</strong>: <span id="scoreA">0</span><br>
+        <strong id="playerBLabel">Player B</strong>: <span id="scoreB">0</span><br>
+        <strong>Winner:</strong> <span id="winnerDisplay">N/A</span>
+      </div>
+
+      <button onclick="addPoint('A')">Point to Player A</button>
+      <button onclick="addPoint('B')">Point to Player B</button>
+
+      <h4>Score Log:</h4>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    let scoreA = 0;
+    let scoreB = 0;
+    let log = [];
+    let playerA = "";
+    let playerB = "";
+
+    function startMatch() {
+      playerA = document.getElementById("playerAName").value || "Player A";
+      playerB = document.getElementById("playerBName").value || "Player B";
+
+      document.getElementById("playerALabel").innerText = playerA;
+      document.getElementById("playerBLabel").innerText = playerB;
+      document.getElementById("matchArea").style.display = "block";
+
+      resetMatch();
+    }
+
+    function resetMatch() {
+      scoreA = 0;
+      scoreB = 0;
+      log = [];
+      document.getElementById("scoreA").innerText = scoreA;
+      document.getElementById("scoreB").innerText = scoreB;
+      document.getElementById("log").innerHTML = "";
+      document.getElementById("winnerDisplay").innerText = "N/A";
+    }
+
+    function addPoint(player) {
+      if (isMatchOver()) return;
+
+      if (player === 'A') {
+        scoreA++;
+        log.push(`${playerA} won rally (${scoreA}-${scoreB})`);
+      } else {
+        scoreB++;
+        log.push(`${playerB} won rally (${scoreA}-${scoreB})`);
+      }
+
+      updateScore();
+    }
+
+    function updateScore() {
+      document.getElementById("scoreA").innerText = scoreA;
+      document.getElementById("scoreB").innerText = scoreB;
+
+      const logElement = document.getElementById("log");
+      logElement.innerHTML = log.map(entry => `<div>${entry}</div>`).join("");
+
+      if (isMatchOver()) {
+        const winner = scoreA > scoreB ? playerA : playerB;
+        document.getElementById("winnerDisplay").innerText = winner;
+      }
+    }
+
+    function isMatchOver() {
+      // Win conditions: first to 21 with 2-point lead, cap at 30
+      if ((scoreA >= 21 || scoreB >= 21) && Math.abs(scoreA - scoreB) >= 2) return true;
+      if (scoreA === 30 || scoreB === 30) return true;
+      return false;
+    }
+  </script>
+</body>
+</html>
