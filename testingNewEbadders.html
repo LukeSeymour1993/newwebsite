@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Badminton Score Tracker</title>
+  <title>Badminton Match Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,118 +10,132 @@
       background: #f0f0f0;
     }
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
       background: white;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
-    input, button {
+    input {
+      width: 48%;
       padding: 10px;
-      margin: 5px 0;
+      margin: 5px 1%;
+    }
+    button {
+      padding: 10px;
       width: 100%;
+      margin-top: 10px;
     }
-    .scoreboard {
-      margin: 20px 0;
-      font-size: 18px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
-    .log {
-      background: #e9e9e9;
+    th, td {
       padding: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-size: 14px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background: #eee;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Badminton Score Tracker</h2>
-
-    <label>Player A Name:</label>
-    <input type="text" id="playerAName" placeholder="Enter Player A Name">
-
-    <label>Player B Name:</label>
-    <input type="text" id="playerBName" placeholder="Enter Player B Name">
-
-    <button onclick="startMatch()">Start Match</button>
-
-    <div id="matchArea" style="display:none;">
-      <div class="scoreboard">
-        <strong id="playerALabel">Player A</strong>: <span id="scoreA">0</span><br>
-        <strong id="playerBLabel">Player B</strong>: <span id="scoreB">0</span><br>
-        <strong>Winner:</strong> <span id="winnerDisplay">N/A</span>
-      </div>
-
-      <button onclick="addPoint('A')">Point to Player A</button>
-      <button onclick="addPoint('B')">Point to Player B</button>
-
-      <h4>Score Log:</h4>
-      <div class="log" id="log"></div>
+    <h2>Badminton Match Tracker</h2>
+    
+    <div>
+      <input type="text" id="player1" placeholder="Player 1 Name">
+      <input type="number" id="score1" placeholder="Player 1 Score">
     </div>
+    <div>
+      <input type="text" id="player2" placeholder="Player 2 Name">
+      <input type="number" id="score2" placeholder="Player 2 Score">
+    </div>
+    
+    <button onclick="submitMatch()">Submit Match</button>
+    
+    <h3>Player Rankings</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Matches Played</th>
+          <th>Matches Won</th>
+          <th>Games Won</th>
+          <th>Games Lost</th>
+        </tr>
+      </thead>
+      <tbody id="rankingTable"></tbody>
+    </table>
   </div>
 
   <script>
-    let scoreA = 0;
-    let scoreB = 0;
-    let log = [];
-    let playerA = "";
-    let playerB = "";
+    const players = {};
 
-    function startMatch() {
-      playerA = document.getElementById("playerAName").value || "Player A";
-      playerB = document.getElementById("playerBName").value || "Player B";
+    function submitMatch() {
+      const p1 = document.getElementById("player1").value.trim();
+      const p2 = document.getElementById("player2").value.trim();
+      const s1 = parseInt(document.getElementById("score1").value);
+      const s2 = parseInt(document.getElementById("score2").value);
 
-      document.getElementById("playerALabel").innerText = playerA;
-      document.getElementById("playerBLabel").innerText = playerB;
-      document.getElementById("matchArea").style.display = "block";
+      if (!p1 || !p2 || isNaN(s1) || isNaN(s2)) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
-      resetMatch();
-    }
+      if (p1 === p2) {
+        alert("Players must have different names.");
+        return;
+      }
 
-    function resetMatch() {
-      scoreA = 0;
-      scoreB = 0;
-      log = [];
-      document.getElementById("scoreA").innerText = scoreA;
-      document.getElementById("scoreB").innerText = scoreB;
-      document.getElementById("log").innerHTML = "";
-      document.getElementById("winnerDisplay").innerText = "N/A";
-    }
+      updatePlayer(p1, s1, s2);
+      updatePlayer(p2, s2, s1);
 
-    function addPoint(player) {
-      if (isMatchOver()) return;
-
-      if (player === 'A') {
-        scoreA++;
-        log.push(`${playerA} won rally (${scoreA}-${scoreB})`);
+      if (s1 > s2) {
+        players[p1].matchesWon += 1;
       } else {
-        scoreB++;
-        log.push(`${playerB} won rally (${scoreA}-${scoreB})`);
+        players[p2].matchesWon += 1;
       }
 
-      updateScore();
+      updateTable();
     }
 
-    function updateScore() {
-      document.getElementById("scoreA").innerText = scoreA;
-      document.getElementById("scoreB").innerText = scoreB;
-
-      const logElement = document.getElementById("log");
-      logElement.innerHTML = log.map(entry => `<div>${entry}</div>`).join("");
-
-      if (isMatchOver()) {
-        const winner = scoreA > scoreB ? playerA : playerB;
-        document.getElementById("winnerDisplay").innerText = winner;
+    function updatePlayer(name, scored, conceded) {
+      if (!players[name]) {
+        players[name] = {
+          matchesPlayed: 0,
+          matchesWon: 0,
+          gamesWon: 0,
+          gamesLost: 0
+        };
       }
+
+      players[name].matchesPlayed += 1;
+      players[name].gamesWon += scored;
+      players[name].gamesLost += conceded;
     }
 
-    function isMatchOver() {
-      // Win conditions: first to 21 with 2-point lead, cap at 30
-      if ((scoreA >= 21 || scoreB >= 21) && Math.abs(scoreA - scoreB) >= 2) return true;
-      if (scoreA === 30 || scoreB === 30) return true;
-      return false;
+    function updateTable() {
+      const table = document.getElementById("rankingTable");
+      const sortedPlayers = Object.entries(players).sort((a, b) => {
+        return b[1].matchesWon - a[1].matchesWon;
+      });
+
+      table.innerHTML = "";
+      for (const [name, stats] of sortedPlayers) {
+        table.innerHTML += `
+          <tr>
+            <td>${name}</td>
+            <td>${stats.matchesPlayed}</td>
+            <td>${stats.matchesWon}</td>
+            <td>${stats.gamesWon}</td>
+            <td>${stats.gamesLost}</td>
+          </tr>
+        `;
+      }
     }
   </script>
 </body>
