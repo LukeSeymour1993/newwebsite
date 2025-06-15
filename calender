@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forgotten Realms Calendar</title>
+  <style>
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #1e1e1e;
+      color: #f1f1f1;
+      text-align: center;
+      margin-top: 100px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Forgotten Realms Calendar</h1>
+  <h2 id="calendarDate"></h2>
+  <button onclick="nextDay()">Next Day</button>
+
+  <script>
+    const months = [
+      { name: "Hammer", days: 30 },
+      { name: "Midwinter", days: 1, isHoliday: true },
+      { name: "Alturiak", days: 30 },
+      { name: "Ches", days: 30 },
+      { name: "Tarsakh", days: 30 },
+      { name: "Greengrass", days: 1, isHoliday: true },
+      { name: "Mirtul", days: 30 },
+      { name: "Kythorn", days: 30 },
+      { name: "Flamerule", days: 30 },
+      { name: "Midsummer", days: 1, isHoliday: true },
+      { name: "Shieldmeet", days: 1, isHoliday: true, leapYearOnly: true },
+      { name: "Eleasis", days: 30 },
+      { name: "Eleint", days: 30 },
+      { name: "Highharvestide", days: 1, isHoliday: true },
+      { name: "Marpenoth", days: 30 },
+      { name: "Uktar", days: 30 },
+      { name: "The Feast of the Moon", days: 1, isHoliday: true },
+      { name: "Nightal", days: 30 }
+    ];
+
+    // Start date: 9 Kythorn 1488
+    let day = 9;
+    let monthIndex = months.findIndex(m => m.name === "Kythorn");
+    let year = 1488;
+
+    function isLeapYear(year) {
+      // In FR, every 4 years is a leap year
+      return year % 4 === 0;
+    }
+
+    function nextDay() {
+      const currentMonth = months[monthIndex];
+
+      day++;
+
+      if (day > currentMonth.days || (currentMonth.leapYearOnly && !isLeapYear(year))) {
+        day = 1;
+        do {
+          monthIndex++;
+        } while (
+          monthIndex < months.length &&
+          months[monthIndex].leapYearOnly &&
+          !isLeapYear(year)
+        );
+
+        if (monthIndex >= months.length) {
+          monthIndex = 0;
+          year++;
+        }
+      }
+
+      // Check if we've reached the end
+      if (day === 10 && months[monthIndex].name === "Kythorn" && year === 1489) {
+        alert("End of calendar reached!");
+        return;
+      }
+
+      renderDate();
+    }
+
+    function renderDate() {
+      const month = months[monthIndex];
+      const dateDisplay = document.getElementById("calendarDate");
+
+      if (month.isHoliday) {
+        dateDisplay.innerText = `${month.name}, ${year}`;
+      } else {
+        dateDisplay.innerText = `${day} ${month.name}, ${year}`;
+      }
+    }
+
+    renderDate();
+  </script>
+</body>
+</html>
